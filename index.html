@@ -2,11 +2,19 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Castastics: The Journey</title>
+    <title>Castastics: The Battle for David's World</title>
     <style>
         body { margin: 0; background: #0a0a0a; color: white; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
-        .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; }
+        .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         .active { display: flex; }
+
+        /* STORY/INTRO SCREEN */
+        #story-screen { background: url('castastics_killer.png') center/cover; background-color: #000; }
+        .dialogue-box { 
+            position: absolute; bottom: 30px; width: 90%; 
+            background: rgba(0, 0, 0, 0.9); border: 2px solid #00d4ff; border-radius: 15px;
+            padding: 20px; box-shadow: 0 0 20px #00d4ff; box-sizing: border-box;
+        }
 
         /* MAGICAL FOREST BG */
         #arena { 
@@ -17,23 +25,35 @@
         .particle { position: absolute; background: cyan; border-radius: 50%; opacity: 0.3; animation: drift 5s infinite; filter: blur(2px); }
         @keyframes drift { 0% { transform: translateY(0); opacity: 0; } 50% { opacity: 0.6; } 100% { transform: translateY(-100px); opacity: 0; } }
 
-        /* SPRITES */
         .sprite { width: 130px; height: 130px; background-size: contain; background-repeat: no-repeat; background-position: bottom; transition: 0.3s; z-index: 5; }
-        
-        /* UI */
         .btn { background: #1a1a2e; border: 2px solid #00d4ff; color: white; padding: 15px; margin: 5px; width: 85%; border-radius: 12px; font-weight: bold; }
-        .locked { opacity: 0.4; border-color: #555; background: #222; }
+        .locked { opacity: 0.3; border-color: #444; }
         .hp-bar { width: 90%; height: 12px; background: #333; border-radius: 6px; margin: 5px; overflow: hidden; }
         .hp-fill { height: 100%; width: 100%; transition: 0.4s; }
     </style>
 </head>
 <body>
 
-<div id="menu" class="screen active">
+<div id="story-screen" class="screen">
+    <div class="dialogue-box">
+        <p id="story-text" style="font-size: 18px; line-height: 1.4;"></p>
+        <button class="btn" onclick="nextStory()" style="width: auto; float: right;">Next</button>
+    </div>
+</div>
+
+<div id="ending-screen" class="screen" style="background: linear-gradient(#00d4ff, #0f3460);">
+    <div class="dialogue-box" style="position: relative; border-color: gold;">
+        <h2 style="color: gold;">THE WORLD IS SAVED!</h2>
+        <p id="ending-text">David says: "Thank you, Castastics, for protecting my world! Castastics Land is safe once again."</p>
+        <button class="btn" onclick="resetProgress()" style="border-color: gold;">PLAY AGAIN</button>
+    </div>
+</div>
+
+<div id="menu" class="screen">
     <h1 style="color:#00d4ff">CASTASTICS</h1>
     <p>Select Your Hero</p>
     <div id="lvl-list" style="width:100%; display: flex; flex-direction: column; align-items: center;"></div>
-    <button class="btn" style="width: 50%; margin-top: 20px; font-size: 10px;" onclick="resetProgress()">RESET GAME</button>
+    <button class="btn" style="width: 50%; margin-top: 20px; font-size: 10px;" onclick="resetProgress()">RESET ALL PROGRESS</button>
 </div>
 
 <div id="battle" class="screen">
@@ -62,45 +82,58 @@ const levels = [
 ];
 
 let unlocked = parseInt(localStorage.getItem('castasticsProg')) || 0;
+let gameFinished = localStorage.getItem('castasticsFinished') === 'true';
 let cur, pHp, bHp, busy = false;
-let audioCtx;
 
-function initMusic() {
-    if (audioCtx) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const notes = [261.63, 329.63, 392, 523.25]; // Heroic chords
-    let i = 0;
-    setInterval(() => {
-        if (!document.getElementById('battle').classList.contains('active')) return;
-        let osc = audioCtx.createOscillator();
-        let g = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(notes[i % 4], audioCtx.currentTime);
-        g.gain.setValueAtTime(0.05, audioCtx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-        osc.connect(g); g.connect(audioCtx.destination);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-        i++;
-    }, 600);
+// STORY LOGIC
+let storyStep = 0;
+const storyLines = [
+    "The Castastics Killer has declared war on David's world, Castastics Land...",
+    "...by having his minions ruin the world!",
+    "But the Castastics have come to fight back! They will not let anything happen to the world David built."
+];
+
+function checkStory() {
+    if (gameFinished) {
+        document.getElementById('ending-screen').classList.add('active');
+    } else if (sessionStorage.getItem('storySeen')) {
+        showMenu();
+    } else {
+        document.getElementById('story-screen').classList.add('active');
+        nextStory();
+    }
+}
+
+function nextStory() {
+    if (storyStep < storyLines.length) {
+        document.getElementById('story-text').innerText = storyLines[storyStep];
+        storyStep++;
+    } else {
+        sessionStorage.setItem('storySeen', 'true');
+        document.getElementById('story-screen').classList.remove('active');
+        showMenu();
+    }
+}
+
+function showMenu() {
+    document.getElementById('menu').classList.add('active');
+    renderMenu();
 }
 
 function renderMenu() {
     const list = document.getElementById('lvl-list');
     list.innerHTML = "";
-    levels.forEach((l, index) => {
+    levels.forEach((l, idx) => {
         const b = document.createElement('button');
-        const isLocked = index > unlocked;
-        b.className = 'btn' + (isLocked ? ' locked' : '');
-        b.innerHTML = isLocked ? "🔒 LOCKED" : l.h + " VS " + l.b;
-        if (!isLocked) {
-            b.onclick = () => startBattle(l);
-        }
+        const lock = idx > unlocked;
+        b.className = 'btn' + (lock ? ' locked' : '');
+        b.innerHTML = lock ? "🔒 LOCKED" : l.h + " VS " + l.b;
+        if (!lock) b.onclick = () => startBattle(l);
         list.appendChild(b);
     });
 }
 
 function startBattle(l) {
-    initMusic();
     cur = l; pHp = 100; bHp = 100;
     document.getElementById('h-name').innerText = l.h;
     document.getElementById('b-name').innerText = l.b;
@@ -119,12 +152,18 @@ async function attack(dmg) {
     document.getElementById('h-img').style.transform = "translateX(0)";
     
     if (bHp <= 0) {
-        if (cur.id === unlocked && unlocked < 6) {
-            unlocked++;
-            localStorage.setItem('castasticsProg', unlocked);
+        if (cur.id === 6) {
+            localStorage.setItem('castasticsFinished', 'true');
+            alert("FINAL BOSS DEFEATED!");
+            location.reload();
+        } else {
+            if (cur.id === unlocked) {
+                unlocked++;
+                localStorage.setItem('castasticsProg', unlocked);
+            }
+            alert("VICTORY! NEXT LEVEL UNLOCKED!");
+            location.reload();
         }
-        alert("VICTORY! NEXT LEVEL UNLOCKED!");
-        location.reload();
         return;
     }
 
@@ -139,10 +178,12 @@ async function attack(dmg) {
 
 function resetProgress() {
     localStorage.removeItem('castasticsProg');
+    localStorage.removeItem('castasticsFinished');
+    sessionStorage.removeItem('storySeen');
     location.reload();
 }
 
-// Generate Forest Particles
+// Forest Particles
 for(let i=0; i<15; i++) {
     let p = document.createElement('div'); p.className = 'particle';
     p.style.width = p.style.height = (Math.random()*5+2)+'px';
@@ -151,7 +192,7 @@ for(let i=0; i<15; i++) {
     document.getElementById('arena').appendChild(p);
 }
 
-renderMenu();
+checkStory();
 </script>
 </body>
 </html>
