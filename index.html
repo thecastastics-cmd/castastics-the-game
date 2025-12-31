@@ -2,14 +2,14 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Castastics: The Battle for David's World</title>
+    <title>Castastics: Final Battle</title>
     <style>
         body { margin: 0; background: #0a0a0a; color: white; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         .active { display: flex; }
 
-        /* STORY/INTRO SCREEN */
-        #story-screen { background: url('castastics_killer.png') center/cover; background-color: #000; }
+        /* STORY & ENDING */
+        #story-screen { background: url('castastics_killer.png') center/cover black; }
         .dialogue-box { 
             position: absolute; bottom: 30px; width: 90%; 
             background: rgba(0, 0, 0, 0.9); border: 2px solid #00d4ff; border-radius: 15px;
@@ -18,18 +18,23 @@
 
         /* MAGICAL FOREST BG */
         #arena { 
-            width: 100%; height: 350px; position: relative; overflow: hidden;
+            width: 100%; height: 320px; position: relative; overflow: hidden;
             background: linear-gradient(#2d1b4e, #16213e, #0f3460);
             border-bottom: 8px solid #2d5a27; display: flex; justify-content: space-around; align-items: flex-end;
         }
         .particle { position: absolute; background: cyan; border-radius: 50%; opacity: 0.3; animation: drift 5s infinite; filter: blur(2px); }
         @keyframes drift { 0% { transform: translateY(0); opacity: 0; } 50% { opacity: 0.6; } 100% { transform: translateY(-100px); opacity: 0; } }
 
+        /* GAMEPLAY */
         .sprite { width: 130px; height: 130px; background-size: contain; background-repeat: no-repeat; background-position: bottom; transition: 0.3s; z-index: 5; }
         .btn { background: #1a1a2e; border: 2px solid #00d4ff; color: white; padding: 15px; margin: 5px; width: 85%; border-radius: 12px; font-weight: bold; }
         .locked { opacity: 0.3; border-color: #444; }
         .hp-bar { width: 90%; height: 12px; background: #333; border-radius: 6px; margin: 5px; overflow: hidden; }
         .hp-fill { height: 100%; width: 100%; transition: 0.4s; }
+
+        /* CREDITS ANIMATION */
+        #credits-roll { position: absolute; top: 100%; width: 100%; text-align: center; animation: scroll 15s linear forwards; }
+        @keyframes scroll { to { top: -120%; } }
     </style>
 </head>
 <body>
@@ -41,67 +46,77 @@
     </div>
 </div>
 
-<div id="ending-screen" class="screen" style="background: linear-gradient(#00d4ff, #0f3460);">
-    <div class="dialogue-box" style="position: relative; border-color: gold;">
-        <h2 style="color: gold;">THE WORLD IS SAVED!</h2>
-        <p id="ending-text">David says: "Thank you, Castastics, for protecting my world! Castastics Land is safe once again."</p>
-        <button class="btn" onclick="resetProgress()" style="border-color: gold;">PLAY AGAIN</button>
+<div id="ending-screen" class="screen" style="background: black; overflow: hidden;">
+    <div id="credits-roll">
+        <h1 style="color: gold;">CASTASTICS SAVED!</h1>
+        <p>David's World is Secure.</p><br>
+        <h3 style="color: #00d4ff;">THE HEROES</h3>
+        <p>Woody<br>James<br>Ezekiel<br>Boxlunch Killer<br>Kenny<br>The Artist<br>Frank</p><br>
+        <h3 style="color: #ff4d4d;">THE FALLEN VILLAINS</h3>
+        <p>Mr. Fruitó<br>Radio<br>Dark Vogue<br>Godzilla<br>Carrot<br>Covered<br>Bookster</p><br>
+        <h3 style="color: gold;">CREATED BY DAVID</h3>
+        <p>Thank you for playing!</p>
+        <button class="btn" onclick="resetProgress()" style="width: 60%; margin-top: 50px;">REPLAY JOURNEY</button>
     </div>
 </div>
 
 <div id="menu" class="screen">
     <h1 style="color:#00d4ff">CASTASTICS</h1>
-    <p>Select Your Hero</p>
     <div id="lvl-list" style="width:100%; display: flex; flex-direction: column; align-items: center;"></div>
-    <button class="btn" style="width: 50%; margin-top: 20px; font-size: 10px;" onclick="resetProgress()">RESET ALL PROGRESS</button>
 </div>
 
 <div id="battle" class="screen">
     <div id="b-name" style="color:#ff4d4d">BOSS</div>
     <div class="hp-bar"><div id="b-hp" class="hp-fill" style="background:#ff4d4d"></div></div>
-    <div id="arena">
-        <div id="h-img" class="sprite"></div>
-        <div id="b-img" class="sprite"></div>
-    </div>
+    <div id="arena"><div id="h-img" class="sprite"></div><div id="b-img" class="sprite"></div></div>
     <div id="h-name" style="color:#00d4ff">HERO</div>
     <div class="hp-bar"><div id="h-hp" class="hp-fill" style="background:#00d4ff"></div></div>
-    <p id="log">Battle Start!</p>
-    <button class="btn" onclick="attack(15)">ATTACK</button>
-    <button class="btn" onclick="attack(35)" style="color:gold; border-color:gold;">SPECIAL SKILL</button>
+    <p id="log">Protect David's World!</p>
+    <button class="btn" onclick="attack(25)">ATTACK</button>
+    <button class="btn" onclick="attack(50)" style="color:gold; border-color:gold;">ULTIMATE SKILL</button>
 </div>
 
 <script>
 const levels = [
     {id:0, h:"Woody", b:"Mr. Fruitó", hI:"woody.png", bI:"fruito.png", hp:100},
-    {id:1, h:"James", b:"Radio", hI:"james.png", bI:"radio.png", hp:150},
-    {id:2, h:"Ezekiel", b:"Dark Vogue", hI:"ezekiel.png", bI:"vogue.png", hp:200},
-    {id:3, h:"Boxlunch", b:"Godzilla", hI:"boxlunch.png", bI:"godzilla.png", hp:500},
-    {id:4, h:"Kenny", b:"Carrot", hI:"kenny.png", bI:"carrot.png", hp:300},
-    {id:5, h:"The Artist", b:"Covered", hI:"artist.png", bI:"covered.png", hp:350},
-    {id:6, h:"Frank", b:"Bookster", hI:"frank.png", bI:"bookster.png", hp:400}
+    {id:1, h:"James", b:"Radio", hI:"james.png", bI:"radio.png", hp:140},
+    {id:2, h:"Ezekiel", b:"Dark Vogue", hI:"ezekiel.png", bI:"vogue.png", hp:160}, // Buffed Ezekiel
+    {id:3, h:"Boxlunch", b:"Godzilla", hI:"boxlunch.png", bI:"godzilla.png", hp:380},
+    {id:4, h:"Kenny", b:"Carrot", hI:"kenny.png", bI:"carrot.png", hp:250},
+    {id:5, h:"The Artist", b:"Covered", hI:"artist.png", bI:"covered.png", hp:300},
+    {id:6, h:"Frank", b:"Bookster", hI:"frank.png", bI:"bookster.png", hp:350}
 ];
 
 let unlocked = parseInt(localStorage.getItem('castasticsProg')) || 0;
 let gameFinished = localStorage.getItem('castasticsFinished') === 'true';
-let cur, pHp, bHp, busy = false;
+let audioCtx;
 
-// STORY LOGIC
+function playTone(freq, duration, vol) {
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let osc = audioCtx.createOscillator();
+    let g = audioCtx.createGain();
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    g.gain.setValueAtTime(vol, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+
+function victoryJingle() {
+    [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playTone(f, 0.6, 0.1), i * 150));
+}
+
 let storyStep = 0;
 const storyLines = [
     "The Castastics Killer has declared war on David's world, Castastics Land...",
     "...by having his minions ruin the world!",
-    "But the Castastics have come to fight back! They will not let anything happen to the world David built."
+    "But the Castastics have come to fight back! Defend David's world!"
 ];
 
 function checkStory() {
-    if (gameFinished) {
-        document.getElementById('ending-screen').classList.add('active');
-    } else if (sessionStorage.getItem('storySeen')) {
-        showMenu();
-    } else {
-        document.getElementById('story-screen').classList.add('active');
-        nextStory();
-    }
+    if (gameFinished) document.getElementById('ending-screen').classList.add('active');
+    else if (sessionStorage.getItem('storySeen')) showMenu();
+    else { document.getElementById('story-screen').classList.add('active'); nextStory(); }
 }
 
 function nextStory() {
@@ -144,55 +159,48 @@ function startBattle(l) {
 }
 
 async function attack(dmg) {
-    if (busy) return; busy = true;
+    playTone(200, 0.2, 0.1);
     bHp -= (dmg / cur.hp * 100);
     document.getElementById('b-hp').style.width = Math.max(0, bHp) + "%";
-    document.getElementById('h-img').style.transform = "translateX(50px)";
+    document.getElementById('h-img').style.transform = "translateX(40px)";
     await new Promise(r => setTimeout(r, 400));
     document.getElementById('h-img').style.transform = "translateX(0)";
     
     if (bHp <= 0) {
+        victoryJingle();
         if (cur.id === 6) {
             localStorage.setItem('castasticsFinished', 'true');
-            alert("FINAL BOSS DEFEATED!");
-            location.reload();
+            alert("VICTORY! YOU SAVED DAVID'S WORLD!");
         } else {
-            if (cur.id === unlocked) {
-                unlocked++;
-                localStorage.setItem('castasticsProg', unlocked);
-            }
-            alert("VICTORY! NEXT LEVEL UNLOCKED!");
-            location.reload();
+            if (cur.id === unlocked) { unlocked++; localStorage.setItem('castasticsProg', unlocked); }
+            alert("VICTORY!");
         }
+        location.reload();
         return;
     }
 
-    pHp -= 20;
+    pHp -= 10; // Heroes take very low damage now!
     document.getElementById('h-hp').style.width = Math.max(0, pHp) + "%";
-    document.getElementById('b-img').style.transform = "translateX(-50px)";
+    document.getElementById('b-img').style.transform = "translateX(-40px)";
     await new Promise(r => setTimeout(r, 400));
     document.getElementById('b-img').style.transform = "translateX(0)";
-    if (pHp <= 0) { alert("Game Over!"); location.reload(); }
-    else { busy = false; }
+    if (pHp <= 0) { alert("Try again for David!"); location.reload(); }
 }
 
 function resetProgress() {
-    localStorage.removeItem('castasticsProg');
-    localStorage.removeItem('castasticsFinished');
-    sessionStorage.removeItem('storySeen');
+    localStorage.clear();
+    sessionStorage.clear();
     location.reload();
 }
 
-// Forest Particles
 for(let i=0; i<15; i++) {
     let p = document.createElement('div'); p.className = 'particle';
     p.style.width = p.style.height = (Math.random()*5+2)+'px';
     p.style.left = Math.random()*100+'%'; p.style.bottom = Math.random()*100+'%';
-    p.style.animationDelay = Math.random()*5+'s';
     document.getElementById('arena').appendChild(p);
 }
 
 checkStory();
 </script>
 </body>
-</html>
+                                                   </html>
