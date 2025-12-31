@@ -2,128 +2,156 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Castastics Battle</title>
+    <title>Castastics: The Journey</title>
     <style>
-        /* Base Styles */
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
+        body { margin: 0; background: #0a0a0a; color: white; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; }
         .active { display: flex; }
 
-        /* The Magical Forest Background */
+        /* MAGICAL FOREST BG */
         #arena { 
-            width: 100%; height: 320px; position: relative; overflow: hidden;
-            background: #16213e; /* Solid color fallback */
+            width: 100%; height: 350px; position: relative; overflow: hidden;
             background: linear-gradient(#2d1b4e, #16213e, #0f3460);
-            border-bottom: 6px solid #2d5a27; display: flex; justify-content: space-around; align-items: flex-end;
+            border-bottom: 8px solid #2d5a27; display: flex; justify-content: space-around; align-items: flex-end;
         }
+        .particle { position: absolute; background: cyan; border-radius: 50%; opacity: 0.3; animation: drift 5s infinite; filter: blur(2px); }
+        @keyframes drift { 0% { transform: translateY(0); opacity: 0; } 50% { opacity: 0.6; } 100% { transform: translateY(-100px); opacity: 0; } }
 
-        /* Sprite Setup */
-        .sprite { 
-            width: 130px; height: 130px; 
-            background-size: contain; background-repeat: no-repeat; background-position: bottom;
-            transition: transform 0.3s; z-index: 5;
-            filter: drop-shadow(0 0 5px rgba(0,212,255,0.5));
-        }
-
-        /* UI Elements */
-        .hp-bar { width: 90%; height: 12px; background: #333; border-radius: 6px; margin: 5px; overflow: hidden; border: 1px solid #555; }
-        .hp-fill { height: 100%; width: 100%; transition: width 0.3s ease; }
-        .btn { background: #1a1a2e; border: 2px solid #00d4ff; color: white; padding: 18px; margin: 6px; width: 85%; border-radius: 15px; font-weight: bold; font-size: 16px; }
-        #log { font-style: italic; color: #00d4ff; margin: 10px; height: 20px; }
+        /* SPRITES */
+        .sprite { width: 130px; height: 130px; background-size: contain; background-repeat: no-repeat; background-position: bottom; transition: 0.3s; z-index: 5; }
+        
+        /* UI */
+        .btn { background: #1a1a2e; border: 2px solid #00d4ff; color: white; padding: 15px; margin: 5px; width: 85%; border-radius: 12px; font-weight: bold; }
+        .locked { opacity: 0.4; border-color: #555; background: #222; }
+        .hp-bar { width: 90%; height: 12px; background: #333; border-radius: 6px; margin: 5px; overflow: hidden; }
+        .hp-fill { height: 100%; width: 100%; transition: 0.4s; }
     </style>
 </head>
 <body>
 
 <div id="menu" class="screen active">
-    <h1 style="color:#00d4ff; text-shadow: 0 0 10px #00d4ff;">CASTASTICS</h1>
-    <p>Select a Level</p>
+    <h1 style="color:#00d4ff">CASTASTICS</h1>
+    <p>Select Your Hero</p>
     <div id="lvl-list" style="width:100%; display: flex; flex-direction: column; align-items: center;"></div>
+    <button class="btn" style="width: 50%; margin-top: 20px; font-size: 10px;" onclick="resetProgress()">RESET GAME</button>
 </div>
 
 <div id="battle" class="screen">
     <div id="b-name" style="color:#ff4d4d">BOSS</div>
     <div class="hp-bar"><div id="b-hp" class="hp-fill" style="background:#ff4d4d"></div></div>
-    
     <div id="arena">
         <div id="h-img" class="sprite"></div>
         <div id="b-img" class="sprite"></div>
     </div>
-    
     <div id="h-name" style="color:#00d4ff">HERO</div>
     <div class="hp-bar"><div id="h-hp" class="hp-fill" style="background:#00d4ff"></div></div>
-    
-    <p id="log">Awaiting command...</p>
-    <button class="btn" onclick="act(15)">ATTACK</button>
-    <button class="btn" onclick="act(35)" style="color:gold; border-color:gold;">ULTIMATE SKILL</button>
+    <p id="log">Battle Start!</p>
+    <button class="btn" onclick="attack(15)">ATTACK</button>
+    <button class="btn" onclick="attack(35)" style="color:gold; border-color:gold;">SPECIAL SKILL</button>
 </div>
 
 <script>
-// Data matching your GitHub file list exactly
 const levels = [
-    {h:"Woody", b:"Mr. Fruitó", hI:"woody.png", bI:"fruito.png", hp:100},
-    {h:"James", b:"Radio", hI:"james.png", bI:"radio.png", hp:150},
-    {h:"Ezekiel", b:"Dark Vogue", hI:"ezekiel.png", bI:"vogue.png", hp:200},
-    {h:"Boxlunch", b:"Godzilla", hI:"boxlunch.png", bI:"godzilla.png", hp:500},
-    {h:"Kenny", b:"Carrot", hI:"kenny.png", bI:"carrot.png", hp:300},
-    {h:"The Artist", b:"Covered", hI:"artist.png", bI:"covered.png", hp:350},
-    {h:"Frank", b:"Bookster", hI:"frank.png", bI:"bookster.png", hp:400}
+    {id:0, h:"Woody", b:"Mr. Fruitó", hI:"woody.png", bI:"fruito.png", hp:100},
+    {id:1, h:"James", b:"Radio", hI:"james.png", bI:"radio.png", hp:150},
+    {id:2, h:"Ezekiel", b:"Dark Vogue", hI:"ezekiel.png", bI:"vogue.png", hp:200},
+    {id:3, h:"Boxlunch", b:"Godzilla", hI:"boxlunch.png", bI:"godzilla.png", hp:500},
+    {id:4, h:"Kenny", b:"Carrot", hI:"kenny.png", bI:"carrot.png", hp:300},
+    {id:5, h:"The Artist", b:"Covered", hI:"artist.png", bI:"covered.png", hp:350},
+    {id:6, h:"Frank", b:"Bookster", hI:"frank.png", bI:"bookster.png", hp:400}
 ];
 
+let unlocked = parseInt(localStorage.getItem('castasticsProg')) || 0;
 let cur, pHp, bHp, busy = false;
+let audioCtx;
 
-// Create Menu
-const list = document.getElementById('lvl-list');
-levels.forEach(l => {
-    const b = document.createElement('button');
-    b.className = 'btn';
-    b.innerText = l.h + " VS " + l.b;
-    b.onclick = () => {
-        cur = l; pHp = 100; bHp = 100;
-        document.getElementById('h-name').innerText = l.h.toUpperCase();
-        document.getElementById('b-name').innerText = l.b.toUpperCase();
-        document.getElementById('h-img').style.backgroundImage = "url('" + l.hI + "')";
-        document.getElementById('b-img').style.backgroundImage = "url('" + l.bI + "')";
-        document.getElementById('menu').classList.remove('active');
-        document.getElementById('battle').classList.add('active');
-        document.getElementById('log').innerText = "Battle Start!";
-    };
-    list.appendChild(b);
-});
+function initMusic() {
+    if (audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [261.63, 329.63, 392, 523.25]; // Heroic chords
+    let i = 0;
+    setInterval(() => {
+        if (!document.getElementById('battle').classList.contains('active')) return;
+        let osc = audioCtx.createOscillator();
+        let g = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(notes[i % 4], audioCtx.currentTime);
+        g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        i++;
+    }, 600);
+}
 
-async function act(dmg) {
-    if(busy) return; busy = true;
-    
-    // Player hits Boss
+function renderMenu() {
+    const list = document.getElementById('lvl-list');
+    list.innerHTML = "";
+    levels.forEach((l, index) => {
+        const b = document.createElement('button');
+        const isLocked = index > unlocked;
+        b.className = 'btn' + (isLocked ? ' locked' : '');
+        b.innerHTML = isLocked ? "🔒 LOCKED" : l.h + " VS " + l.b;
+        if (!isLocked) {
+            b.onclick = () => startBattle(l);
+        }
+        list.appendChild(b);
+    });
+}
+
+function startBattle(l) {
+    initMusic();
+    cur = l; pHp = 100; bHp = 100;
+    document.getElementById('h-name').innerText = l.h;
+    document.getElementById('b-name').innerText = l.b;
+    document.getElementById('h-img').style.backgroundImage = `url(${l.hI})`;
+    document.getElementById('b-img').style.backgroundImage = `url(${l.bI})`;
+    document.getElementById('menu').classList.remove('active');
+    document.getElementById('battle').classList.add('active');
+}
+
+async function attack(dmg) {
+    if (busy) return; busy = true;
     bHp -= (dmg / cur.hp * 100);
-    document.getElementById('log').innerText = cur.h + " attacks!";
-    document.getElementById('h-img').style.transform = "translateX(50px) scale(1.2)";
+    document.getElementById('b-hp').style.width = Math.max(0, bHp) + "%";
+    document.getElementById('h-img').style.transform = "translateX(50px)";
     await new Promise(r => setTimeout(r, 400));
     document.getElementById('h-img').style.transform = "translateX(0)";
-    document.getElementById('b-hp').style.width = Math.max(0, bHp) + "%";
     
-    if(bHp <= 0) {
-        document.getElementById('log').innerText = "VICTORY!";
-        setTimeout(() => location.reload(), 2000);
+    if (bHp <= 0) {
+        if (cur.id === unlocked && unlocked < 6) {
+            unlocked++;
+            localStorage.setItem('castasticsProg', unlocked);
+        }
+        alert("VICTORY! NEXT LEVEL UNLOCKED!");
+        location.reload();
         return;
     }
 
-    // Boss counter
-    document.getElementById('log').innerText = cur.b + " counters!";
-    await new Promise(r => setTimeout(r, 800));
     pHp -= 20;
-    document.getElementById('b-img').style.transform = "translateX(-50px) scale(1.2)";
+    document.getElementById('h-hp').style.width = Math.max(0, pHp) + "%";
+    document.getElementById('b-img').style.transform = "translateX(-50px)";
     await new Promise(r => setTimeout(r, 400));
     document.getElementById('b-img').style.transform = "translateX(0)";
-    document.getElementById('h-hp').style.width = Math.max(0, pHp) + "%";
-    
-    if(pHp <= 0) {
-        document.getElementById('log').innerText = "DEFEAT...";
-        setTimeout(() => location.reload(), 2000);
-    } else {
-        busy = false;
-        document.getElementById('log').innerText = "Your turn!";
-    }
+    if (pHp <= 0) { alert("Game Over!"); location.reload(); }
+    else { busy = false; }
 }
+
+function resetProgress() {
+    localStorage.removeItem('castasticsProg');
+    location.reload();
+}
+
+// Generate Forest Particles
+for(let i=0; i<15; i++) {
+    let p = document.createElement('div'); p.className = 'particle';
+    p.style.width = p.style.height = (Math.random()*5+2)+'px';
+    p.style.left = Math.random()*100+'%'; p.style.bottom = Math.random()*100+'%';
+    p.style.animationDelay = Math.random()*5+'s';
+    document.getElementById('arena').appendChild(p);
+}
+
+renderMenu();
 </script>
 </body>
 </html>
