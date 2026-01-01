@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Castastics: The Battle for David's World</title>
+    <title>Castastics: Titan Slayer</title>
     <style>
         body { margin: 0; background: #0a0a0a; color: white; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
@@ -66,7 +66,7 @@
     <div id="h-name" style="color:#00d4ff">HERO</div>
     <div class="hp-bar"><div id="h-hp" class="hp-fill" style="background:#00d4ff"></div></div>
     
-    <button class="btn" onclick="attack(20)">SMACK ATTACK</button>
+    <button class="btn" onclick="attack(25)">NORMAL ATTACK</button>
     <div style="width:85%; display:flex;">
         <button id="btn-ult" class="btn ult-btn" onclick="useUltimate()">ULTIMATE</button>
         <button id="btn-heal" class="btn heal-btn" onclick="useHeal()">HEAL</button>
@@ -76,7 +76,7 @@
 <div id="ending-screen" class="screen">
     <div class="dialogue-box" style="position: relative; border-color: gold;">
         <h2 style="color: gold;">VICTORY</h2>
-        <p id="ending-text">David says: "Thank you, Castastics, for protecting my world! Castastics Land is safe once again."</p>
+        <p id="ending-text">David says: "Thank you, Castastics, for protecting my world! Godzilla and the minions have been defeated!"</p>
         <button class="btn" onclick="resetProgress()">PLAY AGAIN</button>
     </div>
 </div>
@@ -86,7 +86,7 @@ const levels = [
     {id:0, h:"Woody", b:"Mr. Fruitó", hI:"woody.png", bI:"fruito.png", hp:100},
     {id:1, h:"James", b:"Radio", hI:"james.png", bI:"radio.png", hp:140},
     {id:2, h:"Ezekiel", b:"Dark Vogue", hI:"ezekiel.png", bI:"vogue.png", hp:200},
-    {id:3, h:"Boxlunch", b:"Godzilla", hI:"boxlunch.png", bI:"godzilla.png", hp:400},
+    {id:3, h:"Boxlunch", b:"Godzilla", hI:"boxlunch.png", bI:"godzilla.png", hp:320}, // BALANCED
     {id:4, h:"Kenny", b:"Carrot", hI:"kenny.png", bI:"carrot.png", hp:250},
     {id:5, h:"The Artist", b:"Covered", hI:"artist.png", bI:"covered.png", hp:300},
     {id:6, h:"Frank", b:"Bookster", hI:"frank.png", bI:"bookster.png", hp:350}
@@ -180,22 +180,21 @@ function playVFX(type) {
         new Audio(sfx.Ult).play();
         document.getElementById('arena').classList.add('flash');
         setTimeout(() => document.getElementById('arena').classList.remove('flash'), 150);
-        ctx.strokeStyle = "gold"; ctx.beginPath(); ctx.moveTo(x-50, y-50); ctx.lineTo(x+50, y+50); ctx.stroke();
+        ctx.strokeStyle = "gold"; ctx.beginPath(); 
+        ctx.moveTo(x-60, y-60); ctx.lineTo(x+60, y+60); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x+60, y-60); ctx.lineTo(x-60, y+60); ctx.stroke();
     } else if (type === 'heal') {
         new Audio(sfx.Heal).play();
         document.getElementById('arena').classList.add('heal-flash');
         setTimeout(() => document.getElementById('arena').classList.remove('heal-flash'), 200);
     } else {
-        // UNIQUE HERO ATTACKS
         new Audio(sfx[cur.h] || sfx.Woody).play();
         if (cur.h === "Woody") { 
             ctx.strokeStyle = "#8B4513"; ctx.beginPath(); ctx.arc(x, y, 45, 0, Math.PI * 2); ctx.stroke(); 
         } else if (cur.h === "James") { 
-            ctx.strokeStyle = "cyan"; ctx.shadowBlur = 10; ctx.shadowColor = "cyan";
-            for(let i=0; i<8; i++){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+Math.cos(i)*60, y+Math.sin(i)*60); ctx.stroke(); }
+            ctx.strokeStyle = "cyan"; for(let i=0; i<8; i++){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+Math.cos(i)*60, y+Math.sin(i)*60); ctx.stroke(); }
         } else if (cur.h === "Ezekiel") { 
-            ctx.strokeStyle = "yellow"; ctx.shadowBlur = 15; ctx.shadowColor = "white";
-            ctx.beginPath(); ctx.moveTo(x-50, y-50); ctx.lineTo(x+50, y+50); ctx.stroke();
+            ctx.strokeStyle = "yellow"; ctx.beginPath(); ctx.moveTo(x-50, y-50); ctx.lineTo(x+50, y+50); ctx.stroke();
         } else if (cur.h === "Boxlunch") { 
             ctx.strokeStyle = "red"; for(let i=0; i<3; i++){ ctx.beginPath(); ctx.moveTo(x-20+(i*15), y-30); ctx.lineTo(x-40+(i*15), y+30); ctx.stroke(); }
         } else if (cur.h === "Kenny") { 
@@ -226,7 +225,7 @@ async function useUltimate() {
     busy = true; ultUsed = true;
     document.getElementById('btn-ult').classList.add('used');
     playVFX('ult');
-    bHp -= (60 / cur.hp * 100);
+    bHp -= (70 / cur.hp * 100); // BUFFED DAMAGE
     updateHPBars();
     await new Promise(r => setTimeout(r, 600));
     if (bHp <= 0) return win();
@@ -238,7 +237,7 @@ async function useHeal() {
     busy = true; healUsed = true;
     document.getElementById('btn-heal').classList.add('used');
     playVFX('heal');
-    pHp = Math.min(100, pHp + 45);
+    pHp = Math.min(100, pHp + 60); // BUFFED HEAL
     updateHPBars();
     await new Promise(r => setTimeout(r, 600));
     bossTurn();
