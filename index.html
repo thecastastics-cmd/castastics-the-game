@@ -2,24 +2,21 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Castastics Land: Restored</title>
+    <title>Castastics: The Battle for David's World</title>
     <style>
         body { margin: 0; background: #0a0a0a; color: white; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         .active { display: flex; }
 
-        /* RESTORED STORY SCREEN WITH IMAGE */
-        #story-screen { 
-            background: url('castastics_killer.png') center/cover; 
-            background-color: #000; 
-        }
+        /* INTRO RESTORED */
+        #story-screen { background: url('castastics_killer.png') center/cover; background-color: #000; }
         .dialogue-box { 
             position: absolute; bottom: 30px; width: 90%; 
             background: rgba(0, 0, 0, 0.9); border: 2px solid #00d4ff; border-radius: 15px;
             padding: 20px; box-shadow: 0 0 20px #00d4ff; box-sizing: border-box;
         }
 
-        /* ARENA & VFX */
+        /* ARENA */
         #arena { 
             width: 100%; height: 350px; position: relative; overflow: hidden;
             background: linear-gradient(#1a1a2e, #16213e);
@@ -32,8 +29,8 @@
         .ult-btn { border-color: gold; color: gold; }
         .heal-btn { border-color: #00ff88; color: #00ff88; }
         .used { opacity: 0.3; border-color: #444 !important; color: #444 !important; }
-        
         .locked { opacity: 0.3; border-color: #444; }
+        
         .hp-bar { width: 90%; height: 12px; background: #333; border-radius: 6px; margin: 5px; overflow: hidden; }
         .hp-fill { height: 100%; width: 100%; transition: 0.4s; }
         
@@ -69,7 +66,7 @@
     <div id="h-name" style="color:#00d4ff">HERO</div>
     <div class="hp-bar"><div id="h-hp" class="hp-fill" style="background:#00d4ff"></div></div>
     
-    <button class="btn" onclick="attack(20)">NORMAL ATTACK</button>
+    <button class="btn" onclick="attack(20)">SMACK ATTACK</button>
     <div style="width:85%; display:flex;">
         <button id="btn-ult" class="btn ult-btn" onclick="useUltimate()">ULTIMATE</button>
         <button id="btn-heal" class="btn heal-btn" onclick="useHeal()">HEAL</button>
@@ -78,7 +75,7 @@
 
 <div id="ending-screen" class="screen">
     <div class="dialogue-box" style="position: relative; border-color: gold;">
-        <h2 style="color: gold;">THE WORLD IS SAVED!</h2>
+        <h2 style="color: gold;">VICTORY</h2>
         <p id="ending-text">David says: "Thank you, Castastics, for protecting my world! Castastics Land is safe once again."</p>
         <button class="btn" onclick="resetProgress()">PLAY AGAIN</button>
     </div>
@@ -111,7 +108,6 @@ let unlocked = parseInt(localStorage.getItem('castasticsProg')) || 0;
 let cur, pHp, bHp, busy = false;
 let ultUsed = false, healUsed = false;
 
-// RESTORED ORIGINAL DIALOGUE
 let storyStep = 0;
 const storyLines = [
     "The Castastics Killer has declared war on David's world, Castastics Land...",
@@ -177,16 +173,38 @@ function playVFX(type) {
     const x = bRect.left - aRect.left + 65;
     const y = bRect.top - aRect.top + 65;
 
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+
     if (type === 'ult') {
         new Audio(sfx.Ult).play();
         document.getElementById('arena').classList.add('flash');
         setTimeout(() => document.getElementById('arena').classList.remove('flash'), 150);
+        ctx.strokeStyle = "gold"; ctx.beginPath(); ctx.moveTo(x-50, y-50); ctx.lineTo(x+50, y+50); ctx.stroke();
     } else if (type === 'heal') {
         new Audio(sfx.Heal).play();
         document.getElementById('arena').classList.add('heal-flash');
         setTimeout(() => document.getElementById('arena').classList.remove('heal-flash'), 200);
     } else {
+        // UNIQUE HERO ATTACKS
         new Audio(sfx[cur.h] || sfx.Woody).play();
+        if (cur.h === "Woody") { 
+            ctx.strokeStyle = "#8B4513"; ctx.beginPath(); ctx.arc(x, y, 45, 0, Math.PI * 2); ctx.stroke(); 
+        } else if (cur.h === "James") { 
+            ctx.strokeStyle = "cyan"; ctx.shadowBlur = 10; ctx.shadowColor = "cyan";
+            for(let i=0; i<8; i++){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+Math.cos(i)*60, y+Math.sin(i)*60); ctx.stroke(); }
+        } else if (cur.h === "Ezekiel") { 
+            ctx.strokeStyle = "yellow"; ctx.shadowBlur = 15; ctx.shadowColor = "white";
+            ctx.beginPath(); ctx.moveTo(x-50, y-50); ctx.lineTo(x+50, y+50); ctx.stroke();
+        } else if (cur.h === "Boxlunch") { 
+            ctx.strokeStyle = "red"; for(let i=0; i<3; i++){ ctx.beginPath(); ctx.moveTo(x-20+(i*15), y-30); ctx.lineTo(x-40+(i*15), y+30); ctx.stroke(); }
+        } else if (cur.h === "Kenny") { 
+            ctx.fillStyle = "orange"; ctx.beginPath(); ctx.arc(x, y, 30, 0, Math.PI*2); ctx.fill();
+        } else if (cur.h === "The Artist") { 
+            ctx.fillStyle = "magenta"; for(let i=0; i<6; i++){ ctx.beginPath(); ctx.arc(x+Math.random()*40-20, y+Math.random()*40-20, 15, 0, Math.PI*2); ctx.fill(); }
+        } else if (cur.h === "Frank") { 
+            ctx.fillStyle = "black"; ctx.beginPath(); ctx.ellipse(x, y, 50, 30, Math.PI/4, 0, Math.PI*2); ctx.fill();
+        }
     }
     setTimeout(() => ctx.clearRect(0,0, canvas.width, canvas.height), 400);
 }
@@ -208,7 +226,7 @@ async function useUltimate() {
     busy = true; ultUsed = true;
     document.getElementById('btn-ult').classList.add('used');
     playVFX('ult');
-    bHp -= (55 / cur.hp * 100);
+    bHp -= (60 / cur.hp * 100);
     updateHPBars();
     await new Promise(r => setTimeout(r, 600));
     if (bHp <= 0) return win();
@@ -220,7 +238,7 @@ async function useHeal() {
     busy = true; healUsed = true;
     document.getElementById('btn-heal').classList.add('used');
     playVFX('heal');
-    pHp = Math.min(100, pHp + 40);
+    pHp = Math.min(100, pHp + 45);
     updateHPBars();
     await new Promise(r => setTimeout(r, 600));
     bossTurn();
