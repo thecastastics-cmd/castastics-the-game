@@ -2,49 +2,63 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Castastics: Godzilla Defeated</title>
+    <title>Castastics Land: Animated World</title>
     <style>
         body { margin: 0; background: #0a0a0a; color: white; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         .active { display: flex; }
 
-        /* INTRO RESTORED */
-        #story-screen { background: url('castastics_killer.png') center/cover; background-color: #000; }
-        .dialogue-box { 
-            position: absolute; bottom: 30px; width: 90%; 
-            background: rgba(0, 0, 0, 0.9); border: 2px solid #00d4ff; border-radius: 15px;
-            padding: 20px; box-shadow: 0 0 20px #00d4ff; box-sizing: border-box;
-        }
-
-        /* ARENA */
+        /* ANIMATED ARENA BACKGROUND */
         #arena { 
             width: 100%; height: 350px; position: relative; overflow: hidden;
-            background: linear-gradient(#1a1a2e, #16213e);
+            /* The Animated Sky Gradient */
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background-size: 400% 400%;
+            animation: skyFlow 15s ease infinite;
             border-bottom: 8px solid #00d4ff; display: flex; justify-content: space-around; align-items: flex-end;
         }
-        #vfx-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events:none; z-index: 10; }
+        
+        /* Floating Clouds/Mist Effect */
+        #arena::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 200%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/clouds.png');
+            opacity: 0.2; animation: cloudScroll 30s linear infinite; pointer-events: none;
+        }
 
+        @keyframes skyFlow { 0% { background-position: 50% 0%; } 50% { background-position: 50% 100%; } 100% { background-position: 50% 0%; } }
+        @keyframes cloudScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        /* VFX & UI */
+        #vfx-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events:none; z-index: 10; }
         .sprite { width: 130px; height: 130px; background-size: contain; background-repeat: no-repeat; background-position: bottom; transition: 0.2s; z-index: 5; }
         .btn { background: #1a1a2e; border: 2px solid #00d4ff; color: white; padding: 12px; margin: 4px; width: 85%; border-radius: 12px; font-weight: bold; }
         .ult-btn { border-color: gold; color: gold; }
         .heal-btn { border-color: #00ff88; color: #00ff88; }
         .used { opacity: 0.3; border-color: #444 !important; color: #444 !important; }
-        .locked { opacity: 0.3; border-color: #444; }
         
         .hp-bar { width: 90%; height: 12px; background: #333; border-radius: 6px; margin: 5px; overflow: hidden; }
         .hp-fill { height: 100%; width: 100%; transition: 0.4s; }
         
-        .flash { background: white !important; transition: 0.1s; }
-        .heal-flash { background: #00ff88 !important; transition: 0.2s; }
+        #story-screen { background: url('castastics_killer.png') center/cover; background-color: #000; }
+        .dialogue-box { position: absolute; bottom: 30px; width: 90%; background: rgba(0, 0, 0, 0.9); border: 2px solid #00d4ff; border-radius: 15px; padding: 20px; box-sizing: border-box; }
+
+        /* SCROLL ENDING */
+        #scroll-container {
+            position: absolute; bottom: -100%; width: 80%; text-align: center;
+            animation: scrollUp 20s linear forwards;
+        }
+        @keyframes scrollUp { 0% { bottom: -120%; } 100% { bottom: 120%; } }
         @keyframes shake { 0% { transform: translate(0); } 25% { transform: translate(5px, 5px); } 50% { transform: translate(-5px, -5px); } 100% { transform: translate(0); } }
         .shake { animation: shake 0.2s infinite; }
+        .flash { background: white !important; transition: 0.1s; }
+        .heal-flash { background: #00ff88 !important; transition: 0.2s; }
     </style>
 </head>
 <body>
 
 <div id="story-screen" class="screen">
     <div class="dialogue-box">
-        <p id="story-text" style="font-size: 18px; line-height: 1.4; min-height: 50px;"></p>
+        <p id="story-text"></p>
         <button class="btn" onclick="nextStory()" style="width: auto; float: right;">Next</button>
     </div>
 </div>
@@ -66,17 +80,24 @@
     <div id="h-name" style="color:#00d4ff">HERO</div>
     <div class="hp-bar"><div id="h-hp" class="hp-fill" style="background:#00d4ff"></div></div>
     
-    <button class="btn" onclick="attack(35)">CLAW ATTACK</button>
+    <button class="btn" onclick="attack(35)">NORMAL ATTACK</button>
     <div style="width:85%; display:flex;">
         <button id="btn-ult" class="btn ult-btn" onclick="useUltimate()">ULTIMATE</button>
         <button id="btn-heal" class="btn heal-btn" onclick="useHeal()">HEAL</button>
     </div>
 </div>
 
-<div id="ending-screen" class="screen">
-    <div class="dialogue-box" style="position: relative; border-color: gold;">
-        <h2 style="color: gold;">VICTORY</h2>
-        <p id="ending-text">David says: "The Castastics have defeated the Titans! Peace is restored."</p>
+<div id="ending-screen" class="screen" style="background: black;">
+    <div id="scroll-container">
+        <h2 style="color: gold;">LEGEND OF THE CASTASTICS</h2>
+        <p>The Castastics Killer has been defeated.</p>
+        <p>The Land of David Artsy is at peace.</p>
+        <p>Woody, James, Ezekiel, Boxlunch, Kenny, The Artist, and Frank stood as heroes.</p>
+        <p>The world David built will live forever.</p>
+        <p>FIN</p>
+    </div>
+    <div class="dialogue-box" style="z-index: 20; border-color: gold;">
+        <p>David says: "Thank you, Castastics! You saved my world!"</p>
         <button class="btn" onclick="resetProgress()">PLAY AGAIN</button>
     </div>
 </div>
@@ -86,189 +107,113 @@ const levels = [
     {id:0, h:"Woody", b:"Mr. Fruitó", hI:"woody.png", bI:"fruito.png", hp:100},
     {id:1, h:"James", b:"Radio", hI:"james.png", bI:"radio.png", hp:140},
     {id:2, h:"Ezekiel", b:"Dark Vogue", hI:"ezekiel.png", bI:"vogue.png", hp:180},
-    {id:3, h:"Boxlunch", b:"Godzilla", hI:"boxlunch.png", bI:"godzilla.png", hp:280}, // DROPPED HP
+    {id:3, h:"Boxlunch", b:"Godzilla", hI:"boxlunch.png", bI:"godzilla.png", hp:280}, 
     {id:4, h:"Kenny", b:"Carrot", hI:"kenny.png", bI:"carrot.png", hp:220},
     {id:5, h:"The Artist", b:"Covered", hI:"artist.png", bI:"covered.png", hp:250},
     {id:6, h:"Frank", b:"Bookster", hI:"frank.png", bI:"bookster.png", hp:300}
 ];
 
 const sfx = {
-    Woody: "https://assets.mixkit.co/active_storage/sfx/1497/1497-preview.mp3", 
-    James: "https://assets.mixkit.co/active_storage/sfx/1922/1922-preview.mp3", 
-    Ezekiel: "https://assets.mixkit.co/active_storage/sfx/1188/1188-preview.mp3", 
-    Boxlunch: "https://assets.mixkit.co/active_storage/sfx/1152/1152-preview.mp3", 
-    Kenny: "https://assets.mixkit.co/active_storage/sfx/1070/1070-preview.mp3", 
-    Artist: "https://assets.mixkit.co/active_storage/sfx/1470/1470-preview.mp3", 
-    Frank: "https://assets.mixkit.co/active_storage/sfx/1471/1471-preview.mp3",
-    Ult: "https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3",
+    Woody: "https://assets.mixkit.co/active_storage/sfx/1497/1497-preview.mp3", James: "https://assets.mixkit.co/active_storage/sfx/1922/1922-preview.mp3", 
+    Ezekiel: "https://assets.mixkit.co/active_storage/sfx/1188/1188-preview.mp3", Boxlunch: "https://assets.mixkit.co/active_storage/sfx/1152/1152-preview.mp3", 
+    Kenny: "https://assets.mixkit.co/active_storage/sfx/1070/1070-preview.mp3", Artist: "https://assets.mixkit.co/active_storage/sfx/1470/1470-preview.mp3", 
+    Frank: "https://assets.mixkit.co/active_storage/sfx/1471/1471-preview.mp3", Ult: "https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3",
     Heal: "https://assets.mixkit.co/active_storage/sfx/619/619-preview.mp3"
 };
 
-let unlocked = parseInt(localStorage.getItem('castasticsProg')) || 0;
-let cur, pHp, bHp, busy = false;
-let ultUsed = false, healUsed = false;
-
+let unlocked = parseInt(localStorage.getItem('castasticsProg')) || 0, cur, pHp, bHp, busy = false, ultUsed = false, healUsed = false;
 let storyStep = 0;
-const storyLines = [
-    "The Castastics Killer has declared war on David's world, Castastics Land...",
-    "...by having his minions ruin the world!",
-    "But the Castastics have come to fight back!"
-];
+const storyLines = ["The Castastics Killer has declared war on David's world, Castastics Land...", "...by having his minions ruin the world!", "But the Castastics have come to fight back!"];
 
 function nextStory() {
-    if (storyStep < storyLines.length) {
-        document.getElementById('story-text').innerText = storyLines[storyStep];
-        storyStep++;
-    } else {
-        sessionStorage.setItem('storySeen', 'true');
-        document.getElementById('story-screen').classList.remove('active');
-        showMenu();
-    }
+    if (storyStep < storyLines.length) { document.getElementById('story-text').innerText = storyLines[storyStep]; storyStep++; } 
+    else { sessionStorage.setItem('storySeen', 'true'); document.getElementById('story-screen').classList.remove('active'); showMenu(); }
 }
 
-function showMenu() {
-    document.getElementById('menu').classList.add('active');
-    renderMenu();
-}
+function showMenu() { document.getElementById('menu').classList.add('active'); renderMenu(); }
 
 function renderMenu() {
-    const list = document.getElementById('lvl-list');
-    list.innerHTML = "";
+    const list = document.getElementById('lvl-list'); list.innerHTML = "";
     levels.forEach((l, idx) => {
-        const b = document.createElement('button');
-        const lock = idx > unlocked;
-        b.className = 'btn' + (lock ? ' locked' : '');
-        b.innerHTML = lock ? "🔒 LOCKED" : l.h + " VS " + l.b;
-        if (!lock) b.onclick = () => startBattle(l);
-        list.appendChild(b);
+        const lock = idx > unlocked; const b = document.createElement('button');
+        b.className = 'btn' + (lock ? ' locked' : ''); b.innerHTML = lock ? "🔒 LOCKED" : l.h + " VS " + l.b;
+        if (!lock) b.onclick = () => startBattle(l); list.appendChild(b);
     });
 }
 
 function startBattle(l) {
-    cur = l; pHp = 100; bHp = 100;
-    ultUsed = false; healUsed = false;
-    document.getElementById('btn-ult').classList.remove('used');
-    document.getElementById('btn-heal').classList.remove('used');
-    document.getElementById('h-name').innerText = l.h;
-    document.getElementById('b-name').innerText = l.b;
-    document.getElementById('h-img').style.backgroundImage = `url(${l.hI})`;
-    document.getElementById('b-img').style.backgroundImage = `url(${l.bI})`;
-    document.getElementById('menu').classList.remove('active');
-    document.getElementById('battle').classList.add('active');
-    updateHPBars();
+    cur = l; pHp = 100; bHp = 100; ultUsed = false; healUsed = false;
+    document.getElementById('btn-ult').classList.remove('used'); document.getElementById('btn-heal').classList.remove('used');
+    document.getElementById('h-name').innerText = l.h; document.getElementById('b-name').innerText = l.b;
+    document.getElementById('h-img').style.backgroundImage = `url(${l.hI})`; document.getElementById('b-img').style.backgroundImage = `url(${l.bI})`;
+    document.getElementById('menu').classList.remove('active'); document.getElementById('battle').classList.add('active'); updateHPBars();
 }
 
-function updateHPBars() {
-    document.getElementById('h-hp').style.width = Math.max(0, pHp) + "%";
-    document.getElementById('b-hp').style.width = Math.max(0, bHp) + "%";
-}
+function updateHPBars() { document.getElementById('h-hp').style.width = Math.max(0, pHp) + "%"; document.getElementById('b-hp').style.width = Math.max(0, bHp) + "%"; }
 
 function playVFX(type) {
-    const canvas = document.getElementById('vfx-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-    const bRect = document.getElementById('b-img').getBoundingClientRect();
-    const aRect = document.getElementById('arena').getBoundingClientRect();
-    const x = bRect.left - aRect.left + 65;
-    const y = bRect.top - aRect.top + 65;
-
-    ctx.lineWidth = 6;
-    ctx.lineCap = 'round';
+    const canvas = document.getElementById('vfx-canvas'); const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+    const bRect = document.getElementById('b-img').getBoundingClientRect(), aRect = document.getElementById('arena').getBoundingClientRect();
+    const x = bRect.left - aRect.left + 65, y = bRect.top - aRect.top + 65;
+    ctx.lineWidth = 6; ctx.lineCap = 'round';
 
     if (type === 'ult') {
-        new Audio(sfx.Ult).play();
-        document.getElementById('arena').classList.add('flash');
+        new Audio(sfx.Ult).play(); document.getElementById('arena').classList.add('flash');
         setTimeout(() => document.getElementById('arena').classList.remove('flash'), 150);
-        ctx.strokeStyle = "gold"; ctx.beginPath(); 
-        ctx.moveTo(x-70, y-70); ctx.lineTo(x+70, y+70); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(x+70, y-70); ctx.lineTo(x-70, y+70); ctx.stroke();
+        ctx.strokeStyle = "gold"; ctx.beginPath(); ctx.moveTo(x-70, y-70); ctx.lineTo(x+70, y+70); ctx.stroke();
     } else if (type === 'heal') {
-        new Audio(sfx.Heal).play();
-        document.getElementById('arena').classList.add('heal-flash');
+        new Audio(sfx.Heal).play(); document.getElementById('arena').classList.add('heal-flash');
         setTimeout(() => document.getElementById('arena').classList.remove('heal-flash'), 200);
     } else {
         new Audio(sfx[cur.h] || sfx.Woody).play();
-        if (cur.h === "Woody") { 
-            ctx.strokeStyle = "#8B4513"; ctx.beginPath(); ctx.arc(x, y, 45, 0, Math.PI * 2); ctx.stroke(); 
-        } else if (cur.h === "James") { 
-            ctx.strokeStyle = "cyan"; for(let i=0; i<8; i++){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+Math.cos(i)*60, y+Math.sin(i)*60); ctx.stroke(); }
-        } else if (cur.h === "Ezekiel") { 
-            ctx.strokeStyle = "yellow"; ctx.beginPath(); ctx.moveTo(x-50, y-50); ctx.lineTo(x+50, y+50); ctx.stroke();
-        } else if (cur.h === "Boxlunch") { 
-            ctx.strokeStyle = "red"; for(let i=0; i<3; i++){ ctx.beginPath(); ctx.moveTo(x-20+(i*15), y-30); ctx.lineTo(x-40+(i*15), y+30); ctx.stroke(); }
-        } else if (cur.h === "Kenny") { 
-            ctx.fillStyle = "orange"; ctx.beginPath(); ctx.arc(x, y, 30, 0, Math.PI*2); ctx.fill();
-        } else if (cur.h === "The Artist") { 
-            ctx.fillStyle = "magenta"; for(let i=0; i<6; i++){ ctx.beginPath(); ctx.arc(x+Math.random()*40-20, y+Math.random()*40-20, 15, 0, Math.PI*2); ctx.fill(); }
-        } else if (cur.h === "Frank") { 
-            ctx.fillStyle = "black"; ctx.beginPath(); ctx.ellipse(x, y, 50, 30, Math.PI/4, 0, Math.PI*2); ctx.fill();
-        }
+        if (cur.h === "Woody") { ctx.strokeStyle = "#8B4513"; ctx.beginPath(); ctx.arc(x, y, 45, 0, Math.PI * 2); ctx.stroke(); }
+        else if (cur.h === "James") { ctx.strokeStyle = "cyan"; for(let i=0; i<8; i++){ ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+Math.cos(i)*60, y+Math.sin(i)*60); ctx.stroke(); } }
+        else if (cur.h === "Ezekiel") { ctx.strokeStyle = "yellow"; ctx.beginPath(); ctx.moveTo(x-50, y-50); ctx.lineTo(x+50, y+50); ctx.stroke(); }
+        else if (cur.h === "Boxlunch") { ctx.strokeStyle = "red"; for(let i=0; i<3; i++){ ctx.beginPath(); ctx.moveTo(x-20+(i*15), y-30); ctx.lineTo(x-40+(i*15), y+30); ctx.stroke(); } }
+        else if (cur.h === "Kenny") { ctx.fillStyle = "orange"; ctx.beginPath(); ctx.arc(x, y, 30, 0, Math.PI*2); ctx.fill(); }
+        else if (cur.h === "The Artist") { ctx.fillStyle = "magenta"; for(let i=0; i<6; i++){ ctx.beginPath(); ctx.arc(x+Math.random()*40-20, y+Math.random()*40-20, 15, 0, Math.PI*2); ctx.fill(); } }
+        else if (cur.h === "Frank") { ctx.fillStyle = "black"; ctx.beginPath(); ctx.ellipse(x, y, 50, 30, Math.PI/4, 0, Math.PI*2); ctx.fill(); }
     }
     setTimeout(() => ctx.clearRect(0,0, canvas.width, canvas.height), 400);
 }
 
 async function attack(dmg) {
-    if (busy) return; busy = true;
-    playVFX('normal');
-    bHp -= (dmg / cur.hp * 100);
-    updateHPBars();
+    if (busy) return; busy = true; playVFX('normal');
+    bHp -= (dmg / cur.hp * 100); updateHPBars();
     document.getElementById('h-img').style.transform = "translateX(50px)";
     await new Promise(r => setTimeout(r, 400));
     document.getElementById('h-img').style.transform = "translateX(0)";
-    if (bHp <= 0) return win();
-    bossTurn();
+    if (bHp <= 0) return win(); bossTurn();
 }
 
 async function useUltimate() {
-    if (busy || ultUsed) return;
-    busy = true; ultUsed = true;
-    document.getElementById('btn-ult').classList.add('used');
-    playVFX('ult');
-    bHp -= (80 / cur.hp * 100); // MASSIVE BUFF
-    updateHPBars();
-    await new Promise(r => setTimeout(r, 600));
-    if (bHp <= 0) return win();
-    bossTurn();
+    if (busy || ultUsed) return; busy = true; ultUsed = true; document.getElementById('btn-ult').classList.add('used');
+    playVFX('ult'); bHp -= (85 / cur.hp * 100); updateHPBars();
+    await new Promise(r => setTimeout(r, 600)); if (bHp <= 0) return win(); bossTurn();
 }
 
 async function useHeal() {
-    if (busy || healUsed) return;
-    busy = true; healUsed = true;
-    document.getElementById('btn-heal').classList.add('used');
-    playVFX('heal');
-    pHp = Math.min(100, pHp + 80); // MASSIVE HEAL
-    updateHPBars();
-    await new Promise(r => setTimeout(r, 600));
-    bossTurn();
+    if (busy || healUsed) return; busy = true; healUsed = true; document.getElementById('btn-heal').classList.add('used');
+    playVFX('heal'); pHp = Math.min(100, pHp + 80); updateHPBars();
+    await new Promise(r => setTimeout(r, 600)); bossTurn();
 }
 
 async function bossTurn() {
-    document.getElementById('b-img').style.transform = "translateX(-50px)";
-    document.getElementById('battle').classList.add('shake');
-    pHp -= 12; // REDUCED BOSS DAMAGE
-    updateHPBars();
-    await new Promise(r => setTimeout(r, 400));
-    document.getElementById('b-img').style.transform = "translateX(0)";
-    document.getElementById('battle').classList.remove('shake');
-    if (pHp <= 0) { alert("Try Again!"); location.reload(); }
-    else { busy = false; }
+    document.getElementById('b-img').style.transform = "translateX(-50px)"; document.getElementById('battle').classList.add('shake');
+    pHp -= 12; updateHPBars(); await new Promise(r => setTimeout(r, 400));
+    document.getElementById('b-img').style.transform = "translateX(0)"; document.getElementById('battle').classList.remove('shake');
+    if (pHp <= 0) { alert("Try Again!"); location.reload(); } else { busy = false; }
 }
 
 function win() {
-    if (cur.id === 6) { document.getElementById('ending-screen').classList.add('active'); }
-    else {
-        if (cur.id === unlocked) { unlocked++; localStorage.setItem('castasticsProg', unlocked); }
-        alert("VICTORY!"); location.reload();
-    }
+    if (cur.id === 6) { document.getElementById('battle').classList.remove('active'); document.getElementById('ending-screen').classList.add('active'); }
+    else { if (cur.id === unlocked) { unlocked++; localStorage.setItem('castasticsProg', unlocked); } alert("VICTORY!"); location.reload(); }
 }
 
 function resetProgress() { localStorage.clear(); location.reload(); }
 
-if (!sessionStorage.getItem('storySeen')) { 
-    document.getElementById('story-screen').classList.add('active'); 
-    nextStory(); 
-} else { showMenu(); }
+if (!sessionStorage.getItem('storySeen')) { document.getElementById('story-screen').classList.add('active'); nextStory(); } else { showMenu(); }
 </script>
 </body>
 </html>
