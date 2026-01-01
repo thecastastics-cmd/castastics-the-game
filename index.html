@@ -2,14 +2,17 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Castastics Land: Battle Master</title>
+    <title>Castastics Land: Restored</title>
     <style>
         body { margin: 0; background: #0a0a0a; color: white; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         .active { display: flex; }
 
-        /* STORY SCREEN */
-        #story-screen { background: #000; }
+        /* RESTORED STORY SCREEN WITH IMAGE */
+        #story-screen { 
+            background: url('castastics_killer.png') center/cover; 
+            background-color: #000; 
+        }
         .dialogue-box { 
             position: absolute; bottom: 30px; width: 90%; 
             background: rgba(0, 0, 0, 0.9); border: 2px solid #00d4ff; border-radius: 15px;
@@ -40,7 +43,7 @@
         .shake { animation: shake 0.2s infinite; }
     </style>
 </head>
-<body id="game-body">
+<body>
 
 <div id="story-screen" class="screen">
     <div class="dialogue-box">
@@ -52,7 +55,7 @@
 <div id="menu" class="screen">
     <h1 style="color:#00d4ff">CASTASTICS LAND</h1>
     <div id="lvl-list" style="width:100%; display: flex; flex-direction: column; align-items: center;"></div>
-    <button class="btn" style="width: 50%; margin-top: 20px; font-size: 10px;" onclick="resetProgress()">RESET ALL PROGRESS</button>
+    <button class="btn" style="width: 50%; margin-top: 20px; font-size: 10px;" onclick="resetProgress()">RESET PROGRESS</button>
 </div>
 
 <div id="battle" class="screen">
@@ -75,8 +78,8 @@
 
 <div id="ending-screen" class="screen">
     <div class="dialogue-box" style="position: relative; border-color: gold;">
-        <h2 style="color: gold;">VICTORY</h2>
-        <p>The Castastics have saved David's world!</p>
+        <h2 style="color: gold;">THE WORLD IS SAVED!</h2>
+        <p id="ending-text">David says: "Thank you, Castastics, for protecting my world! Castastics Land is safe once again."</p>
         <button class="btn" onclick="resetProgress()">PLAY AGAIN</button>
     </div>
 </div>
@@ -106,11 +109,15 @@ const sfx = {
 
 let unlocked = parseInt(localStorage.getItem('castasticsProg')) || 0;
 let cur, pHp, bHp, busy = false;
-let ultUsed = false;
-let healUsed = false;
+let ultUsed = false, healUsed = false;
 
+// RESTORED ORIGINAL DIALOGUE
 let storyStep = 0;
-const storyLines = ["The Killer's minions are here!", "Use Heal wisely—you only get one!", "Protect David's World at all costs!"];
+const storyLines = [
+    "The Castastics Killer has declared war on David's world, Castastics Land...",
+    "...by having his minions ruin the world!",
+    "But the Castastics have come to fight back! They will not let anything happen to the world David built."
+];
 
 function nextStory() {
     if (storyStep < storyLines.length) {
@@ -180,8 +187,6 @@ function playVFX(type) {
         setTimeout(() => document.getElementById('arena').classList.remove('heal-flash'), 200);
     } else {
         new Audio(sfx[cur.h] || sfx.Woody).play();
-        ctx.lineWidth = 6; ctx.strokeStyle = "white";
-        ctx.beginPath(); ctx.arc(x, y, 40, 0, Math.PI*2); ctx.stroke();
     }
     setTimeout(() => ctx.clearRect(0,0, canvas.width, canvas.height), 400);
 }
@@ -229,7 +234,7 @@ async function bossTurn() {
     await new Promise(r => setTimeout(r, 400));
     document.getElementById('b-img').style.transform = "translateX(0)";
     document.getElementById('battle').classList.remove('shake');
-    if (pHp <= 0) { alert("Hero Defeated!"); location.reload(); }
+    if (pHp <= 0) { alert("Game Over!"); location.reload(); }
     else { busy = false; }
 }
 
@@ -249,4 +254,4 @@ if (!sessionStorage.getItem('storySeen')) {
 } else { showMenu(); }
 </script>
 </body>
-        </html>
+</html>
