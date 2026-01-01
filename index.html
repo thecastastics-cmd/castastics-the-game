@@ -2,33 +2,31 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Castastics Land: Animated World</title>
+    <title>Castastics Land: Custom World</title>
     <style>
         body { margin: 0; background: #0a0a0a; color: white; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         .active { display: flex; }
 
-        /* ANIMATED ARENA BACKGROUND */
+        /* INTEGRATED CUSTOM BACKGROUND */
         #arena { 
             width: 100%; height: 350px; position: relative; overflow: hidden;
-            /* The Animated Sky Gradient */
-            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            background-size: 400% 400%;
-            animation: skyFlow 15s ease infinite;
+            /* CHANGE 'land-bg.png' TO YOUR FILE NAME */
+            background: url('land-bg.png') center bottom; 
+            background-size: cover;
             border-bottom: 8px solid #00d4ff; display: flex; justify-content: space-around; align-items: flex-end;
         }
         
-        /* Floating Clouds/Mist Effect */
+        /* Floating Clouds/Mist Overlay (Works on top of your image) */
         #arena::before {
             content: ""; position: absolute; top: 0; left: 0; width: 200%; height: 100%;
             background: url('https://www.transparenttextures.com/patterns/clouds.png');
-            opacity: 0.2; animation: cloudScroll 30s linear infinite; pointer-events: none;
+            opacity: 0.15; animation: cloudScroll 40s linear infinite; pointer-events: none;
         }
 
-        @keyframes skyFlow { 0% { background-position: 50% 0%; } 50% { background-position: 50% 100%; } 100% { background-position: 50% 0%; } }
         @keyframes cloudScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-        /* VFX & UI */
+        /* UI & SPRITES */
         #vfx-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events:none; z-index: 10; }
         .sprite { width: 130px; height: 130px; background-size: contain; background-repeat: no-repeat; background-position: bottom; transition: 0.2s; z-index: 5; }
         .btn { background: #1a1a2e; border: 2px solid #00d4ff; color: white; padding: 12px; margin: 4px; width: 85%; border-radius: 12px; font-weight: bold; }
@@ -45,7 +43,7 @@
         /* SCROLL ENDING */
         #scroll-container {
             position: absolute; bottom: -100%; width: 80%; text-align: center;
-            animation: scrollUp 20s linear forwards;
+            animation: scrollUp 25s linear forwards;
         }
         @keyframes scrollUp { 0% { bottom: -120%; } 100% { bottom: 120%; } }
         @keyframes shake { 0% { transform: translate(0); } 25% { transform: translate(5px, 5px); } 50% { transform: translate(-5px, -5px); } 100% { transform: translate(0); } }
@@ -103,6 +101,7 @@
 </div>
 
 <script>
+// (All levels, SFX, and logic from previous version remain the same)
 const levels = [
     {id:0, h:"Woody", b:"Mr. Fruitó", hI:"woody.png", bI:"fruito.png", hp:100},
     {id:1, h:"James", b:"Radio", hI:"james.png", bI:"radio.png", hp:140},
