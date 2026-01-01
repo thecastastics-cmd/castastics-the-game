@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Castastics: Titan Slayer</title>
+    <title>Castastics: Godzilla Defeated</title>
     <style>
         body { margin: 0; background: #0a0a0a; color: white; font-family: sans-serif; overflow: hidden; touch-action: manipulation; }
         .screen { display: none; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
@@ -66,7 +66,7 @@
     <div id="h-name" style="color:#00d4ff">HERO</div>
     <div class="hp-bar"><div id="h-hp" class="hp-fill" style="background:#00d4ff"></div></div>
     
-    <button class="btn" onclick="attack(25)">NORMAL ATTACK</button>
+    <button class="btn" onclick="attack(35)">CLAW ATTACK</button>
     <div style="width:85%; display:flex;">
         <button id="btn-ult" class="btn ult-btn" onclick="useUltimate()">ULTIMATE</button>
         <button id="btn-heal" class="btn heal-btn" onclick="useHeal()">HEAL</button>
@@ -76,7 +76,7 @@
 <div id="ending-screen" class="screen">
     <div class="dialogue-box" style="position: relative; border-color: gold;">
         <h2 style="color: gold;">VICTORY</h2>
-        <p id="ending-text">David says: "Thank you, Castastics, for protecting my world! Godzilla and the minions have been defeated!"</p>
+        <p id="ending-text">David says: "The Castastics have defeated the Titans! Peace is restored."</p>
         <button class="btn" onclick="resetProgress()">PLAY AGAIN</button>
     </div>
 </div>
@@ -85,11 +85,11 @@
 const levels = [
     {id:0, h:"Woody", b:"Mr. Fruitó", hI:"woody.png", bI:"fruito.png", hp:100},
     {id:1, h:"James", b:"Radio", hI:"james.png", bI:"radio.png", hp:140},
-    {id:2, h:"Ezekiel", b:"Dark Vogue", hI:"ezekiel.png", bI:"vogue.png", hp:200},
-    {id:3, h:"Boxlunch", b:"Godzilla", hI:"boxlunch.png", bI:"godzilla.png", hp:320}, // BALANCED
-    {id:4, h:"Kenny", b:"Carrot", hI:"kenny.png", bI:"carrot.png", hp:250},
-    {id:5, h:"The Artist", b:"Covered", hI:"artist.png", bI:"covered.png", hp:300},
-    {id:6, h:"Frank", b:"Bookster", hI:"frank.png", bI:"bookster.png", hp:350}
+    {id:2, h:"Ezekiel", b:"Dark Vogue", hI:"ezekiel.png", bI:"vogue.png", hp:180},
+    {id:3, h:"Boxlunch", b:"Godzilla", hI:"boxlunch.png", bI:"godzilla.png", hp:280}, // DROPPED HP
+    {id:4, h:"Kenny", b:"Carrot", hI:"kenny.png", bI:"carrot.png", hp:220},
+    {id:5, h:"The Artist", b:"Covered", hI:"artist.png", bI:"covered.png", hp:250},
+    {id:6, h:"Frank", b:"Bookster", hI:"frank.png", bI:"bookster.png", hp:300}
 ];
 
 const sfx = {
@@ -112,7 +112,7 @@ let storyStep = 0;
 const storyLines = [
     "The Castastics Killer has declared war on David's world, Castastics Land...",
     "...by having his minions ruin the world!",
-    "But the Castastics have come to fight back! They will not let anything happen to the world David built."
+    "But the Castastics have come to fight back!"
 ];
 
 function nextStory() {
@@ -181,8 +181,8 @@ function playVFX(type) {
         document.getElementById('arena').classList.add('flash');
         setTimeout(() => document.getElementById('arena').classList.remove('flash'), 150);
         ctx.strokeStyle = "gold"; ctx.beginPath(); 
-        ctx.moveTo(x-60, y-60); ctx.lineTo(x+60, y+60); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(x+60, y-60); ctx.lineTo(x-60, y+60); ctx.stroke();
+        ctx.moveTo(x-70, y-70); ctx.lineTo(x+70, y+70); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x+70, y-70); ctx.lineTo(x-70, y+70); ctx.stroke();
     } else if (type === 'heal') {
         new Audio(sfx.Heal).play();
         document.getElementById('arena').classList.add('heal-flash');
@@ -225,7 +225,7 @@ async function useUltimate() {
     busy = true; ultUsed = true;
     document.getElementById('btn-ult').classList.add('used');
     playVFX('ult');
-    bHp -= (70 / cur.hp * 100); // BUFFED DAMAGE
+    bHp -= (80 / cur.hp * 100); // MASSIVE BUFF
     updateHPBars();
     await new Promise(r => setTimeout(r, 600));
     if (bHp <= 0) return win();
@@ -237,7 +237,7 @@ async function useHeal() {
     busy = true; healUsed = true;
     document.getElementById('btn-heal').classList.add('used');
     playVFX('heal');
-    pHp = Math.min(100, pHp + 60); // BUFFED HEAL
+    pHp = Math.min(100, pHp + 80); // MASSIVE HEAL
     updateHPBars();
     await new Promise(r => setTimeout(r, 600));
     bossTurn();
@@ -246,12 +246,12 @@ async function useHeal() {
 async function bossTurn() {
     document.getElementById('b-img').style.transform = "translateX(-50px)";
     document.getElementById('battle').classList.add('shake');
-    pHp -= 15;
+    pHp -= 12; // REDUCED BOSS DAMAGE
     updateHPBars();
     await new Promise(r => setTimeout(r, 400));
     document.getElementById('b-img').style.transform = "translateX(0)";
     document.getElementById('battle').classList.remove('shake');
-    if (pHp <= 0) { alert("Game Over!"); location.reload(); }
+    if (pHp <= 0) { alert("Try Again!"); location.reload(); }
     else { busy = false; }
 }
 
